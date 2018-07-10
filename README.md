@@ -2,7 +2,9 @@
 ## Sheppard Somers
 July 2018
 
+# The methods that the herokuapp works with now work on this one
 
+Sorts posts by date created with newest first, uses timestamp in object ID so updates do not change order. 
 
 # starter express app template
 
