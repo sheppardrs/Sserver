@@ -5,5 +5,8 @@
         "node": "current"
       }
     }]
-  ]
+  ],
+  "plugins": [["babel-plugin-dotenv", {
+      "replacedModuleName": "babel-dotenv"
+   }]]
 }

@@ -6,6 +6,7 @@ const PostSchema = new Schema({
   tags: String,
   cover_url: String,
   content: String,
+  author: { type: Schema.Types.ObjectId, ref: 'User' },
 });
 
 PostSchema.virtual('id').get(function makeid() {

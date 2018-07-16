@@ -1,9 +1,12 @@
 import { Router } from 'express';
+import dotenv from 'dotenv';
 import * as Posts from './controllers/post_controller';
 import * as UserController from './controllers/user_controller';
 import { requireAuth, requireSignin } from './services/passport';
 
 const router = Router();
+
+dotenv.config();
 
 router.get('/', (req, res) => {
   res.json({ message: 'welcome to our blog api!' });

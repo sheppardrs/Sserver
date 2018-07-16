@@ -1,9 +1,15 @@
 import jwt from 'jwt-simple';
+// import { AUTH_SECRET } from 'babel-plugin-dotenv';
 import dotenv from 'dotenv';
 import User from '../models/user_model';
 
 // make the secret available as process.env.AUTH_SECRET
 dotenv.config({ silent: true });
+
+// TODO: REMOVE after testing
+// Debugging dotenv AUTH_SECRET
+// console.log('________ in user_controller, AUTH_SECRET is', process.env.AUTH_SECRET);
+
 
 function tokenForUser(user) {
   const timestamp = new Date().getTime();
