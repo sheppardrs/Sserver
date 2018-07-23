@@ -20,7 +20,8 @@ router.route('/posts')
 router.route('/posts/:id')
   .get(Posts.getPost)
   .put(requireAuth, Posts.updatePost)
-  .delete(requireAuth, Posts.deletePost);
+  .delete(requireAuth, Posts.deletePost)
+  .patch(Posts.likePost);
 
 router.post('/signin', requireSignin, UserController.signin);
 
