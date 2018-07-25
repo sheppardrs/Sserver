@@ -1,10 +1,24 @@
-# CS52 Lab 5
+# Server for Sharity MVP
 ## Sheppard Somers
 July 2018
+Started from lab5 of CS52 at Dartmouth College taught by Timothy Pierson so this is built from course notes and assignments as well as stack exchange and [youtube](https://www.youtube.com/watch?v=Td-2D-_7Y2E&index=20&list=PLoYCgNOIyGABj2GQSlDRjgvXtqfDxKm5b).
 
 # TODO
-## Deploy to herokuapp
-Add the server to herokuapp
+ * extend users model to include username & more
+ * store and send offers and requests
+ * add filters
+ * add sort
+ * add search
+ * add AWS S3 for image uploading
+ * add chat functionality between users
+ * add comments?
+
+`*` involves server side as well
+
+
+## Deploy
+Add the server to herokuapp?
+
 ## Error messages
 Show error messages for each error from the server. Maybe an alert? Or a fancy timed popup or just a banner across the top that does not require a click and just disapears either after 5 seconds or on next action/navigation.
 ## Delete Authorization Error
