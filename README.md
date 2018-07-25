@@ -9,6 +9,8 @@ Started from lab5 of CS52 at Dartmouth College taught by Timothy Pierson so this
  * add filters
  * add sort
  * add search
+ * add favorites for each user (array of refs to posts)
+ * number of views/upvotes/likes
  * add AWS S3 for image uploading
  * add chat functionality between users
  * add comments?
