@@ -2,6 +2,19 @@
 ## Sheppard Somers
 July 2018
 
+# TODO
+## Deploy to herokuapp
+Add the server to herokuapp
+## Error messages
+Show error messages for each error from the server. Maybe an alert? Or a fancy timed popup or just a banner across the top that does not require a click and just disapears either after 5 seconds or on next action/navigation.
+## Delete Authorization Error
+Either redirect unauthorized deletes or display an error message saying you have to be the author to delete.
+Maybe store and compare the username on the client (lab4) side.
+## Authors  
+Show the names of authors (usernames).
+## Extra credit?
+
+
 # The methods that the herokuapp works with now work on this one
 
 Sorts posts by date created with newest first, uses timestamp in object ID so updates do not change order.
