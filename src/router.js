@@ -12,10 +12,13 @@ router.get('/', (req, res) => {
   res.json({ message: 'welcome to our blog api!' });
 });
 
-// routes will go here
+// routes
+// note here that patch is used for filtering and sorting
+// as the server has to receive a body with what to select
 router.route('/posts')
   .post(requireAuth, Posts.createPost)
-  .get(Posts.getPosts);
+  .get(Posts.getPosts)
+  .patch(Posts.getFilteredPosts);
 
 router.route('/posts/:id')
   .get(Posts.getPost)

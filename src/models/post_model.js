@@ -6,6 +6,8 @@ const PostSchema = new Schema({
   tags: String,
   cover_url: String,
   content: String,
+  location: { type: String, default: 'No Location' },
+  request: { type: Boolean, default: 0 },
   likes: { type: Number, default: 0 },
   author: { type: Schema.Types.ObjectId, ref: 'User' },
 });
