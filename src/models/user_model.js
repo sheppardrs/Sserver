@@ -7,6 +7,7 @@ const SALT_REPS = 10;
 const UserSchema = new Schema({
   email: { type: String, unique: true, lowercase: true },
   password: { type: String },
+  username: { type: String, lowercase: true },
 });
 
 UserSchema.set('toJSON', {

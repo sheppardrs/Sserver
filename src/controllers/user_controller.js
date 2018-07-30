@@ -25,10 +25,11 @@ export const signin = (req, res, next) => {
 export const signup = (req, res, next) => {
   const theemail = req.body.email;
   const thepassword = req.body.password;
+  const theusername = req.body.username;
 
   // check that both the email and password exist
-  if (!theemail || !thepassword) {
-    return res.status(422).send('You must provide email and password');
+  if (!theemail || !thepassword || !theusername) {
+    return res.status(422).send('You must provide email and password and username to sign up.');
   }
 
   // check that the email does not already exist in db
@@ -38,10 +39,18 @@ export const signup = (req, res, next) => {
     }
   });
 
+  // check that the username does not already exist in db
+  User.find({ theusername }).then((user) => {
+    if (!user.length) {
+      return res.status(433).send('Username already in use.');
+    }
+  });
+
   // if user doesn't exist, create a new user
   const user = new User();
   user.email = theemail;
   user.password = thepassword;
+  user.username = theusername;
 
   user.save()
     .then((result) => {

@@ -100,8 +100,11 @@ export const deletePost = (req, res) => {
 };
 
 export const updatePost = (req, res) => {
+  // console.log('starting update');
   Post.findById(req.params.id).then((post) => {
+    // console.log('editing...');
     if (req.user._id.equals(post.author)) {
+      // console.log('matched author to user');
       Post.findByIdAndUpdate(req.params.id, {
         title: req.body.title,
         content: req.body.content,
@@ -114,14 +117,15 @@ export const updatePost = (req, res) => {
       });
     } else {
       // console.log('################################');
-      res.status(610);
+      res.status(410).json({ error: 'not authorized to edit, must be author.' });
     }
   });
 };
 
 
 export const likePost = (req, res) => {
-  // console.log('######## adding a like####### ');
+  console.log('######## adding a like####### ');
+  console.log(req.user);
   Post.findByIdAndUpdate(req.params.id, { $inc: { likes: 1 } }, { new: true }, (error, response) => {
     if (error) {
       res.status(530).json({ error });
