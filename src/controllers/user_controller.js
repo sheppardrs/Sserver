@@ -19,7 +19,7 @@ function tokenForUser(user) {
 // passport middleware does the verification so
 // only returns a token
 export const signin = (req, res, next) => {
-  res.send({ token: tokenForUser(req.user) });
+  res.send({ token: tokenForUser(req.user), username: req.user.username });
 };
 
 export const signup = (req, res, next) => {
@@ -33,16 +33,16 @@ export const signup = (req, res, next) => {
   }
 
   // check that the email does not already exist in db
-  User.find({ theemail }).then((user) => {
-    if (!user.length) {
+  User.find({ email: theemail }).then((user) => {
+    if (user.length) {
       return res.status(433).send('Email already in use.');
     }
   });
 
   // check that the username does not already exist in db
-  User.find({ theusername }).then((user) => {
-    if (!user.length) {
-      return res.status(433).send('Username already in use.');
+  User.find({ username: theusername }).then((user) => {
+    if (user.length) {
+      return res.status(434).send('Username already in use.');
     }
   });
 

@@ -1,4 +1,5 @@
 import Post from '../models/post_model';
+import User from '../models/user_model';
 
 // number of characters to select from content for listing preview
 const previewLen = 100;
@@ -77,7 +78,7 @@ export const getFilteredPosts = (req, res) => {
 };
 
 export const getPost = (req, res) => {
-  Post.findById(req.params.id).then((post) => {
+  Post.findById(req.params.id).populate('author', 'username').then((post) => {
     // console.log(post._id.getTimestamp());
     res.send(post);
   });
