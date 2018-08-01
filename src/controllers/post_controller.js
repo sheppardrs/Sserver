@@ -45,36 +45,53 @@ export const getPosts = (req, res) => {
 };
 
 export const getFilteredPosts = (req, res) => {
-  // console.log('######', req.body);
-  let Sort;
-  // can condense down to
-  // Sort = { $sort: { req.body.sort: 1 } };
-  // if want all ascending and will keep client and Server
-  // field names the same
-  if (req.body.sort === 'trending') {
-    Sort = { $sort: { likes: -1 } };
-  } else if (req.body.sort === 'title') {
-    Sort = { $sort: { title: 1 } };
-  } else if (req.body.sort === 'tags') {
-    Sort = { $sort: { tags: 1 } };
-  } else if (req.body.sort === 'location') {
-    Sort = { $sort: { location: 1 } };
-  } else {
-    Sort = { $sort: { _id: -1 } };
-  }
-
-
-  Post.aggregate([
-    { $limit: numPosts },
-    {
-      $project: {
-        id: '$_id', title: 1, tags: 1, cover_url: 1, likes: 1, location: 1, request: 1, preview: { $substr: ['$content', 0, previewLen] },
+  // console.log('###### req.body', req.body);
+  // if search => search if not sort and filter
+  console.log('###### search term:', req.body.search, 'that was it');
+  if (req.body.search !== '') {
+    // console.log('actually got a search term here wooohooo!!!!!');
+    Post.aggregate([
+      { $match: { $text: { $search: req.body.search } } },
+      { $sort: { score: { $meta: 'textScore' } } },
+      { $limit: numPosts },
+      {
+        $project: {
+          id: '$_id', title: 1, tags: 1, cover_url: 1, likes: 1, location: 1, request: 1, preview: { $substr: ['$content', 0, previewLen] },
+        },
       },
-    },
-    Sort,
-  ]).then((posts) => {
-    res.send(posts);
-  });
+    ]).then((posts) => {
+      res.send(posts);
+    });
+  } else { // not searching just getting filtered and sorted posts
+    let Sort;
+    // can condense down to
+    // Sort = { $sort: { req.body.sort: 1 } };
+    // if want all ascending and will keep client and Server
+    // field names the same
+    if (req.body.sort === 'trending') {
+      Sort = { $sort: { likes: -1 } };
+    } else if (req.body.sort === 'title') {
+      Sort = { $sort: { title: 1 } };
+    } else if (req.body.sort === 'tags') {
+      Sort = { $sort: { tags: 1 } };
+    } else if (req.body.sort === 'location') {
+      Sort = { $sort: { location: 1 } };
+    } else {
+      Sort = { $sort: { _id: -1 } };
+    }
+    // console.log('got nothing for that search');
+    Post.aggregate([
+      { $limit: numPosts },
+      {
+        $project: {
+          id: '$_id', title: 1, tags: 1, cover_url: 1, likes: 1, location: 1, request: 1, preview: { $substr: ['$content', 0, previewLen] },
+        },
+      },
+      Sort,
+    ]).then((posts) => {
+      res.send(posts);
+    });
+  }
 };
 
 export const getPost = (req, res) => {

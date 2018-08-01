@@ -19,6 +19,14 @@ PostSchema.virtual('id').get(function makeid() {
 PostSchema.set('toJSON', {
   virtuals: true,
 });
+
+PostSchema.index({
+  title: 'text',
+  content: 'text',
+  location: 'text',
+  author: 'text',
+});
+
 // create a PostModel class from Schema
 const PostModel = mongoose.model('Post', PostSchema);
 
