@@ -1,8 +1,9 @@
 import jwt from 'jwt-simple';
 // import { AUTH_SECRET } from 'babel-plugin-dotenv';
 import dotenv from 'dotenv';
+import { createTransport } from 'nodemailer';
 import User from '../models/user_model';
-
+import Token from '../models/token_model';
 // make the secret available as process.env.AUTH_SECRET
 dotenv.config({ silent: true });
 
@@ -21,6 +22,14 @@ function tokenForUser(user) {
 export const signin = (req, res, next) => {
   res.send({ token: tokenForUser(req.user), username: req.user.username });
 };
+
+const transporter = createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASSWORD,
+  },
+});
 
 export const signup = (req, res, next) => {
   const theemail = req.body.email;
@@ -52,11 +61,110 @@ export const signup = (req, res, next) => {
   user.password = thepassword;
   user.username = theusername;
 
+  // Before Verification
+  // user.save()
+  //   .then((result) => {
+  //     res.send({ token: tokenForUser(user) });
+  //   })
+  //   .catch((error) => {
+  //     res.status(500).json({ error });
+  //   });
+
+  // after, copied from link in readme
   user.save()
     .then((result) => {
-      res.send({ token: tokenForUser(user) });
+      // create verification token for user
+      const token = new Token({
+        user: user._id,
+        token: tokenForUser(user),
+      });
+
+      // save token
+      token.save((err) => {
+        if (err) {
+          console.log('failed in saving token.\n');
+          return res.status(500).send({ mess: err.message });
+        }
+
+        // send verification email
+        const mailOptions = {
+          from: 'Sharity <sharitygive@gmail.com',
+          to: user.email,
+          subject: 'Verify Your Email Address',
+          text: `Hi,\n\n Please verify your account by clicking the link: \nhttp://${req.headers.host}/api/confirmation/${token.token}\n`,
+        };
+
+        transporter.sendMail(mailOptions, (err, info) => {
+          if (err) {
+            console.log('error sending mail\n');
+            return res.status(500).send({ mess: err.message });
+          } else {
+            res.status(200).send(`A verification email has been sent to ${user.email}. Please verify your email within 10 hours.`);
+          }
+        });
+      });
+
+      // res.send({ message: 'Please verify your email address withing 12 hours.' });
     })
     .catch((error) => {
       res.status(500).json({ error });
     });
+};
+
+// Verify User by confirming token
+export const confirm = (req, res, next) => {
+  // console.log('$$$$$$ confirming....');
+  Token.findOne({ token: req.params.token }, (err, token) => {
+    if (!token) { return res.status(400).send({ type: 'not-verified', mess: 'We were unable to match your unique token. Your token may have expired.' }); }
+
+    User.findOne({ _id: token.user }, (err, user) => {
+      if (!user) { return res.status(401).send({ type: 'not-verified', mess: 'We were unable to find a user for this token.' }); }
+      if (user.isVerified) { return res.status(400).send({ type: 'already-verified', mess: ' Your account was already verified.' }); }
+
+      // verify and save the user
+      user.isVerified = true;
+      user.save((err) => {
+        if (err) { return res.status(500).send({ mess: err.message }); }
+        res.status(200).send('The account has been verified. Please log in.');
+      });
+    });
+  });
+};
+
+// Resending tokens for expired ones
+export const resend = (req, res, next) => {
+  // TODO add in normalize and checks for validationErrors
+
+  User.findOne({ email: req.body.email }, (err, user) => {
+    if (!user) { return res.status(410).send({ mess: 'We did not find a user matching the email you provided.' }); }
+    if (user.isVerified) { return res.status(411).send({ mess: 'Your account is already verified.' }); }
+
+    // create token, save and send emails
+    const token = new Token({
+      user: user._id,
+      token: tokenForUser(user),
+    });
+
+    // save token
+    token.save((err) => {
+      if (err) { return res.status(500).send({ mess: err.message }); }
+
+      // send verification email
+      const mailOptions = {
+        from: 'Sharity <sharitygive@gmail.com',
+        to: user.email,
+        subject: 'Verify Your Email Address',
+        text: `Hi,\n\n Please verify your account by clicking the link: \nhttp://${req.headers.host}/api/confirmation/${token.token}\n`,
+      };
+
+      transporter.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          console.log('error sending mail\n', 'info: ', info);
+          return res.status(500).send({ mess: err.message });
+        } else {
+          res.status(200).send(`A verification email has been sent to ${user.email}. Please verify your email within 10 hours.`);
+        }
+      });
+    });
+  });
 };

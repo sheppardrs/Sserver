@@ -34,6 +34,8 @@ const localLogin = new LocalStrategy(localOptions, (email, password, done) => {
         done(err);
       } else if (!isMatch) {
         done(null, false);
+      } else if (!user.isVerified) {
+        done(null, false);
       } else {
         done(null, user);
       }
@@ -50,6 +52,8 @@ const jwtLogin = new JwtStrategy(jwtOptions, (payload, done) => {
       done(err, false);
     } else if (user) {
       done(null, user);
+    } else if (!user.isVerified) {
+      done(null, false);
     } else {
       done(null, false);
     }

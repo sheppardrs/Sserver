@@ -3,11 +3,14 @@ import bcrypt from 'bcryptjs';
 
 const SALT_REPS = 10;
 
+// verfication process is from https://codemoto.io/coding/nodejs/email-verification-node-express-mongodb
+
 // create a PostSchema with a title field
 const UserSchema = new Schema({
   email: { type: String, unique: true, lowercase: true },
   password: { type: String },
   username: { type: String, lowercase: true },
+  isVerified: { type: Boolean, default: false },
 });
 
 UserSchema.set('toJSON', {
