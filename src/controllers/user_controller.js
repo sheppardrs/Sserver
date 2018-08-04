@@ -13,6 +13,8 @@ dotenv.config({ silent: true });
 const signinpage = '<a href="http://sharity.surge.sh/signin">signin</a>';
 const homepage = '<a href="http://sharity.surge.sh">homepage</a>';
 
+const passwordrestlink = 'http://sharity.surge.sh/passwordreset';
+
 function tokenForUser(user) {
   const timestamp = new Date().getTime();
   return jwt.encode({ sub: user.id, at: timestamp }, process.env.AUTH_SECRET);
@@ -91,8 +93,8 @@ export const signup = (req, res, next) => {
         const mailOptions = {
           from: 'Sharity <sharitygive@gmail.com',
           to: user.email,
-          subject: 'Verify Your Email Address',
-          text: `Hi,\n\n Please verify your account by clicking the link: \nhttp://${req.headers.host}/api/confirmation/${token.token}\n`,
+          subject: 'Confirm your Sharity Account',
+          text: 'Hi,\n\n Please open your account by clicking the link below to get started using Sharity:'`\nhttp://${req.headers.host}/api/confirmation/${token.token}\n\nWe hope you enjoy the website and make meaningful connections. Don't hesitate to reach out with any feedback!\n\nThe Sharity Team\n${homepage}`,
         };
 
         transporter.sendMail(mailOptions, (err, info) => {
@@ -155,8 +157,8 @@ export const resend = (req, res, next) => {
       const mailOptions = {
         from: 'Sharity <sharitygive@gmail.com',
         to: user.email,
-        subject: 'Verify Your Email Address',
-        text: `Hi,\n\n Please verify your account by clicking the link: \nhttp://${req.headers.host}/api/confirmation/${token.token}\n`,
+        subject: 'Confirm your Sharity Account',
+        text: 'Hi,\n\n Please open your account by clicking the link below to get started using Sharity:'`\nhttp://${req.headers.host}/api/confirmation/${token.token}\n\nWe hope you enjoy the website and make meaningful connections. Don't hesitate to reach out with any feedback!\n\nThe Sharity Team\n${homepage}`,
       };
 
       transporter.sendMail(mailOptions, (err, info) => {
@@ -166,6 +168,67 @@ export const resend = (req, res, next) => {
         } else {
           res.status(200).send(`A verification email has been sent to ${user.email}. Please verify your email within 10 hours.`);
         }
+      });
+    });
+  });
+};
+
+// Password reset route
+export const resetpasswordreq = (req, res, next) => {
+  // TODO add in normalize and checks for validationErrors
+  console.log('Received password reset request');
+  User.findOne({ email: req.body.email }, (err, user) => {
+    if (!user) { return res.status(410).send({ mess: 'We did not find a user matching the email you provided.' }); }
+
+    // create token, save and send emails
+    const token = new Token({
+      user: user._id,
+      isPassword: true,
+      token: tokenForUser(user),
+    });
+
+    // save token
+    token.save((err) => {
+      if (err) { return res.status(500).send({ mess: err.message }); }
+
+      // send verification email
+      const mailOptions = {
+        from: 'Sharity <sharitygive@gmail.com',
+        to: user.email,
+        subject: 'Password Reset',
+        html: `Hi,\n\n Please reset your password using the following link:\n<a href="${passwordrestlink}/${token.token}">Reset Password</a>\n\nThis link expires in 12 hours so reset your password soon! Don't hesitate to reach out with any feedback!\n\nThe Sharity Team\n${homepage}`,
+      };
+
+      transporter.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          console.log('error sending mail\n', 'info: ', info);
+          return res.status(500).send({ mess: err.message });
+        } else {
+          res.status(200).send(`A verification email has been sent to ${user.email}. Please verify your email within 10 hours.`);
+        }
+      });
+    });
+  });
+};
+
+// Verify User by confirming token
+// should receive password and token
+export const resetpassword = (req, res, next) => {
+  console.log('$$$$$$ reset password request');
+
+  Token.findOne({ token: req.body.token }, (err, token) => {
+    if (!token) { return res.status(400).send(`We were unable to match your unique token. Your token may have expired. Visit our ${homepage}`); }
+
+    User.findOne({ _id: token.user }, (err, user) => {
+      if (!user) { return res.status(401).send(`We were unable to find a user for this token. Visit our ${homepage}`); }
+      if (!user.isVerified) { return res.status(400).send(`Your account is not verified.Visit our ${homepage} try to sign in and then verify your account.`); }
+
+      // verify and save the user
+      user.password = req.body.password;
+      user.save((err) => {
+        if (err) { return res.status(500).send({ mess: err.message }); }
+        console.log('reset password!');
+        res.status(200).send(`Your password has been reset. Please ${signinpage}`);
       });
     });
   });

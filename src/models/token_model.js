@@ -9,6 +9,7 @@ const SALT_REPS = 10;
 const EmailVerifyTokenSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   token: { type: String, required: true },
+  isPassword: { type: Boolean, default: false },
   createdAt: {
     type: Date, required: true, default: Date.now, expires: 43200,
   },

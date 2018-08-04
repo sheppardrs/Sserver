@@ -65,5 +65,9 @@ function sendTestEmail() {
 router.get('/confirmation/:token', UserController.confirm);
 router.post('/resend', UserController.resend);
 
+//  for password reset
+router.post('/resetpasswordreq', UserController.resetpasswordreq);
+router.post('/resetpassword', UserController.resetpassword);
+
 
 export default router;
