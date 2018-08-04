@@ -10,7 +10,8 @@ dotenv.config({ silent: true });
 // TODO: REMOVE after testing
 // Debugging dotenv AUTH_SECRET
 // console.log('________ in user_controller, AUTH_SECRET is', process.env.AUTH_SECRET);
-
+const signinpage = '<a href="http://sharity.surge.sh/signin">signin</a>';
+const homepage = '<a href="http://sharity.surge.sh">homepage</a>';
 
 function tokenForUser(user) {
   const timestamp = new Date().getTime();
@@ -114,18 +115,19 @@ export const signup = (req, res, next) => {
 // Verify User by confirming token
 export const confirm = (req, res, next) => {
   // console.log('$$$$$$ confirming....');
+
   Token.findOne({ token: req.params.token }, (err, token) => {
-    if (!token) { return res.status(400).send({ type: 'not-verified', mess: 'We were unable to match your unique token. Your token may have expired.' }); }
+    if (!token) { return res.status(400).send(`We were unable to match your unique token. Your token may have expired. Visit our ${homepage}`); }
 
     User.findOne({ _id: token.user }, (err, user) => {
-      if (!user) { return res.status(401).send({ type: 'not-verified', mess: 'We were unable to find a user for this token.' }); }
-      if (user.isVerified) { return res.status(400).send({ type: 'already-verified', mess: ' Your account was already verified.' }); }
+      if (!user) { return res.status(401).send(`We were unable to find a user for this token. Visit our ${homepage}`); }
+      if (user.isVerified) { return res.status(400).send(`Your account was already verified.Visit our ${homepage}`); }
 
       // verify and save the user
       user.isVerified = true;
       user.save((err) => {
         if (err) { return res.status(500).send({ mess: err.message }); }
-        res.status(200).send('The account has been verified. Please log in.');
+        res.status(200).send(`The account has been verified. Please ${signinpage}`);
       });
     });
   });
