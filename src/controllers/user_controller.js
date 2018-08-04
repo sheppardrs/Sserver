@@ -218,6 +218,7 @@ export const resetpassword = (req, res, next) => {
 
   Token.findOne({ token: req.body.token }, (err, token) => {
     if (!token) { return res.status(400).send(`We were unable to match your unique token. Your token may have expired. Visit our ${homepage}`); }
+    if (!token.isPassword) { return res.status(400).send(`We were unable to match your unique token. Your token may have expired. Visit our ${homepage}`); }
 
     User.findOne({ _id: token.user }, (err, user) => {
       if (!user) { return res.status(401).send(`We were unable to find a user for this token. Visit our ${homepage}`); }
