@@ -3,6 +3,7 @@ import jwt from 'jwt-simple';
 import dotenv from 'dotenv';
 import { createTransport } from 'nodemailer';
 import User from '../models/user_model';
+import Post from '../models/post_model';
 import Token from '../models/token_model';
 // make the secret available as process.env.AUTH_SECRET
 dotenv.config({ silent: true });
@@ -232,5 +233,35 @@ export const resetpassword = (req, res, next) => {
         res.status(200).send(`Your password has been reset. Please ${signinpage}`);
       });
     });
+  });
+};
+
+
+// Favorites
+
+// both should require auth so that they can access req.user
+// Getting favorites
+// find user, populate favorites, return them
+export const getFavorites = (req, res, next) => {
+  // find the user.populate('favorites', "content title tags").then((posts) res.send(posts)).catch(console.log('error in populating favorites'));
+  // console.log('getting favorites for: ', req.user._id);
+  User.findById(req.user._id).populate('favorites', 'title tags likes content cover_url request location id').then((posts) => {
+    // console.log(post._id.getTimestamp());
+  //  console.log(posts.favorites);
+    res.send(posts.favorites);
+  });
+};
+
+// pass it the post id to add as a favorite
+export const addFavorite = (req, res, next) => {
+  // console.log('addFavorite received req.user._id & req.id', req.user._id, req.body.id);
+  User.findByIdAndUpdate(req.user._id, { $addToSet: { favorites: req.body.id } }, { new: true }, (err, resp) => {
+    if (err) {
+      // console.log('error in update:', err);
+      res.status(500).send(err);
+    } else {
+      // console.log('response was:', resp);
+      res.send(resp);
+    }
   });
 };

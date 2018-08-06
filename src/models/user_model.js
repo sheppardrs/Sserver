@@ -11,6 +11,7 @@ const UserSchema = new Schema({
   password: { type: String },
   username: { type: String, lowercase: true },
   isVerified: { type: Boolean, default: false },
+  favorites: [{ type: Schema.Types.ObjectId, ref: 'Post' }],
 });
 
 UserSchema.set('toJSON', {

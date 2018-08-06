@@ -35,6 +35,10 @@ router.post('/signin', requireSignin, UserController.signin);
 
 router.post('/signup', UserController.signup);
 
+router.route('/favorite')
+  .post(requireAuth, UserController.addFavorite)
+  .get(requireAuth, UserController.getFavorites);
+
 function sendTestEmail() {
   // Sending an email:
   const transporter = createTransport({
