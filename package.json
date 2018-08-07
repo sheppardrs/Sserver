@@ -27,13 +27,15 @@
     "dotenv": "^6.0.0",
     "ejs": "^2.5.9",
     "express": "^4.16.3",
+    "http": "^0.0.0",
     "jwt-simple": "^0.5.1",
     "mongoose": "^5.2.1",
     "morgan": "^1.9.0",
     "nodemailer": "^4.6.7",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "socket.io": "^2.1.1"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.3",

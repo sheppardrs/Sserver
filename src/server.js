@@ -4,6 +4,8 @@ import cors from 'cors';
 import path from 'path';
 import morgan from 'morgan';
 import mongoose from 'mongoose';
+import io from 'socket.io';
+import http from 'http';
 // import dotenv from 'dotenv';
 import apiRouter from './router';
 // dotenv variables
@@ -11,6 +13,29 @@ import apiRouter from './router';
 
 // initialize
 const app = express();
+// adding in chat sockets?
+const server = http.Server(app);
+const websocket = io(server);
+server.listen(3000, () => { return console.log('listening on *:3000'); });
+
+websocket.on('connection', (socket) => {
+  console.log('A Client just connected on ', socket.id);
+  socket.emit('message', 'Hello World!');
+  socket.on('message', (message) => {
+    console.log('received: ', message);
+    // send the message to everyone including the sender
+    websocket.emit('message', message);
+  });
+  socket.on('disconnect', (sockett) => {
+    console.log('Disconnected: ', sockett);
+  });
+});
+
+
+websocket.on('disconnect', (socket) => {
+  console.log('Disconnected: ', socket.id);
+});
+
 
 // enable/disable cross origin resource sharing if necessary
 app.use(cors());
