@@ -7,10 +7,11 @@ const MessageSchema = new Schema({
   // from: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   // to: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   from: String,
-  to: String,
+  // to: String,
+  to: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
   content: { type: String, default: '' },
   createdAt: {
-    type: Date, required: true, default: Date.now, expires: 43200,
+    type: Date, required: true, default: Date.now,
   },
 });
 
