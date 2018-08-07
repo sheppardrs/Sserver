@@ -11,6 +11,9 @@ import apiRouter from './router';
 // dotenv variables
 // dotenv.config({ silent: true });
 
+// for socket.io management
+import socketManager from './socketFunc';
+
 // initialize
 const app = express();
 // adding in chat sockets?
@@ -19,21 +22,17 @@ const websocket = io(server);
 server.listen(3000, () => { return console.log('listening on *:3000'); });
 
 websocket.on('connection', (socket) => {
-  console.log('A Client just connected on ', socket.id);
-  socket.emit('message', 'Hello World!');
-  socket.on('message', (message) => {
-    console.log('received: ', message);
-    // send the message to everyone including the sender
-    websocket.emit('message', message);
-  });
-  socket.on('disconnect', (sockett) => {
-    console.log('Disconnected: ', sockett);
-  });
-});
-
-
-websocket.on('disconnect', (socket) => {
-  console.log('Disconnected: ', socket.id);
+  socketManager(socket, websocket);
+  // console.log('A Client just connected on ', socket.id);
+  // socket.emit('message', { username: 'server', content: 'Hello World!' });
+  // socket.on('message', (message) => {
+  //   console.log('received: ', message);
+  //   // send the message to everyone including the sender
+  //   websocket.emit('message', message);
+  // });
+  // socket.on('disconnect', (sockett) => {
+  //   console.log('Disconnected: ', sockett);
+  // });
 });
 
 
