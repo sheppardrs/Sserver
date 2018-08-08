@@ -1,7 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
 
-// verfication process is from https://codemoto.io/coding/nodejs/email-verification-node-express-mongodb
-
 // create a MessageSchema with a title field
 const MessageSchema = new Schema({
   // from: { type: Schema.Types.ObjectId, ref: 'User', required: true },

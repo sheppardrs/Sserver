@@ -25,7 +25,7 @@ const socketManager = (socket, websocket) => {
 
   // join with username so add socket to user db
   socket.on('join', (user) => {
-    // console.log('got username: ', user, 'on: ', socket.id);
+    console.log('got username: ', user, 'on: ', socket.id);
     User.findOneAndUpdate({ username: user }, { socket: socket.id }).then((newUser) => {
       // this is unnecessary for now
       UserName = user;

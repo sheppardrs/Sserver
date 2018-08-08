@@ -17,24 +17,14 @@ import socketManager from './socketFunc';
 // initialize
 const app = express();
 // adding in chat sockets?
-const server = http.Server(app);
-const websocket = io(server);
-server.listen(3000, () => { return console.log('listening on *:3000'); });
+const server = http.createServer(app);
+const websocket = io.listen(server);
 
-websocket.on('connection', (socket) => {
-  socketManager(socket, websocket);
-  // console.log('A Client just connected on ', socket.id);
-  // socket.emit('message', { username: 'server', content: 'Hello World!' });
-  // socket.on('message', (message) => {
-  //   console.log('received: ', message);
-  //   // send the message to everyone including the sender
-  //   websocket.emit('message', message);
-  // });
-  // socket.on('disconnect', (sockett) => {
-  //   console.log('Disconnected: ', sockett);
-  // });
-});
+// server.listen(3000, () => { return console.log('listening on *:3000'); });
 
+// websocket.on('connection', (socket) => {
+//   socketManager(socket, websocket);
+// });
 
 // enable/disable cross origin resource sharing if necessary
 app.use(cors());
@@ -71,6 +61,15 @@ app.get('/', (req, res) => {
 // START THE SERVER
 // =============================================================================
 const port = process.env.PORT || 9090;
+// app.listen(port);
+
 app.listen(port);
+
+server.listen(process.env.PORT || 3000);
+
+
+websocket.on('connection', (socket) => {
+  socketManager(socket, websocket);
+});
 
 console.log(`listening on: ${port}`);
