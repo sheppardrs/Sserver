@@ -6,6 +6,7 @@ import mongoose, { Schema } from 'mongoose';
 const ConversationSchema = new Schema({
   participantIDs: { type: Schema.Types.ObjectId, ref: 'User' },
   participants: [String],
+  title: String, // could become reference to post or post title
   createdAt: {
     type: Date, required: true, default: Date.now,
   },

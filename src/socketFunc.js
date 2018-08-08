@@ -10,21 +10,27 @@ const socketManager = (socket, websocket) => {
   let UserName;
   let currConversation; // conversation should be full item
 
+  // TODO: conversation helper
+  // find conversations for user and add user to corresponding rooms
+  const findConvosHelper = () => {
+    Conversation.find({ participants: UserName }).sort('-createdAt').then((conversations) => {
+      socket.emit('convos', conversations); // send the list of conversations
+      // add socket to all the relevant rooms
+      conversations.map((conversation) => {
+        socket.join(conversation._id);
+        return true;
+      });
+    });
+  };
+
   // join with username so add socket to user db
   socket.on('join', (user) => {
-    console.log('got username: ', user, 'on: ', socket.id);
+    // console.log('got username: ', user, 'on: ', socket.id);
     User.findOneAndUpdate({ username: user }, { socket: socket.id }).then((newUser) => {
       // this is unnecessary for now
       UserName = user;
-      Conversation.find({ participants: UserName }).then((conversations) => {
-        socket.emit('convos', conversations);
-      });
-
-      // Message.find({ to: UserName }).then((messages) => {
-      //   // console.log(messages);
-      //   socket.emit('messages', messages);
-      // });
-      // socket.emit('message', { from: 'server', content: 'You are online.', _id: 1 });
+      // find & send convos and join rooms
+      findConvosHelper(UserName);
     }).catch((err) => {
       console.log('Error in adding socket to user', err);
     });
@@ -32,94 +38,69 @@ const socketManager = (socket, websocket) => {
 
   // change the conversation to the one rec
   // send the relavent messages
-  // TODO: add the sockets to the room of that convo
-  // or do this on connection
   socket.on('convo', (convo) => {
     currConversation = convo;
-    console.log('Received convo request: ', convo);
-    Message.find({ to: currConversation._id }).then((messages) => {
+    // console.log('Received convo request: ', convo);
+    Message.find({ to: currConversation._id }).sort('createdAt').then((messages) => {
       socket.emit('messages', messages);
     }).catch((err) => {
       console.log('Error in fetching conversation: ', err);
     });
+    // redundant
+    // socket.join(currConversation._id);
   });
   // socket.emit('message', { username: 'server', content: 'Hello World!' });
 
   // start a conversation with a given user
-  socket.on('startconvo', (username) => {
+  socket.on('startconvo', (toUsername) => {
     const newconvo = new Conversation();
-    newconvo.participants.push(username); // received to
+    newconvo.participants.push(toUsername); // received (to)
     newconvo.participants.push(UserName); // current user (from)
-
-    newconvo.save().then((saveRes) => {
-      currConversation = saveRes;
-      console.log('created new conversation: ', saveRes);
-      // TODO: send new list of conversations to relevant users
+    newconvo.title = `${toUsername} & ${UserName}`; // TODO make title post title or ref
+    // check that the toUsername exists
+    User.findOne({ username: toUsername }).then((user) => {
+      if (user !== null) {
+        newconvo.save().then((saveRes) => {
+          currConversation = saveRes;
+          // console.log('created new conversation: ', saveRes);
+          // TODO: send new list of convos to sender and send alert to get convos to recipient
+          findConvosHelper(UserName);
+          //  User.findOne({ username: toUsername }).then((user) => {
+          // console.log('sending newConvo to: ', user);
+          websocket.to(user.socket).emit('newConvo');
+          // /}).catch((err) => { console.log('error in finding user to alert of new conversation.', err); });
+        }).catch((err) => { console.log('error in startconvo with saving convo', err); });
+      }
     });
   });
 
-  // TODO: conversation helper
-  // find conversations for user
 
   // receive a message, save message, send out message
   socket.on('message', (message) => {
-    // console.log('received: ', message);
-
     // store the message in database
     const saveMess = new Message();
     saveMess.from = message.from;
     saveMess.content = message.content;
     saveMess.to = message.to;
     saveMess.save()
-
       .then((saveRes) => {
-        // send to everyone
-        // websocket.emit('message', saveRes);
-        // adding sending to specific recipient
-        // send back to sender
-        // socket.emit('message', saveRes);
-
-        // TODO: use a room instead of the map and find
         // room should just be the conversation._id
         Conversation.findById(saveRes.to._id).then((convo) => {
-          console.log('found conversation: ', convo);
-          convo.participants.map((user) => {
-            User.findOne({ username: user }).then((recipient) => {
-              // console.log('found:', recipient.socket);
-              if (recipient && (recipient.socket !== 0)) {
-              //   console.log('trying to send to ', recipient.socket);
-                websocket.to(recipient.socket).emit('message', saveRes);
-              }
-            }).catch((err) => {
-              console.log('error in finding username to send to: ', err);
-            });
-            return true;
-          });
+        //  console.log('found conversation: ', convo);
+          websocket.to(convo._id).emit('message', saveRes);
         });
-
-        // old, for non conversation based messaging
-        // User.findOne({ username: saveRes.to }).then((recipient) => {
-        //   // console.log('found:', recipient.socket);
-        //   if (recipient && (recipient.socket !== 0)) {
-        //   //   console.log('trying to send to ', recipient.socket);
-        //     websocket.to(recipient.socket).emit('message', saveRes);
-        //   }
-        // }).catch((err) => {
-        //   console.log('error in finding username to send to: ', err);
-        // });
       })
       .catch((error) => {
         console.log('error in saving message', error);
       });
-
-
-    // send the message to everyone including the sender
-    // websocket.emit('message', message);
   });
+
+
   socket.on('disconnect', (sockett) => {
-    console.log('Disconnected: ', sockett, UserName);
+    // TODO: UserName is always undefined here
+    // console.log('Disconnected: ', sockett, UserName);
     User.findOneAndUpdate({ username: UserName }, { socket: 0 }).then((res) => {
-      console.log('set socket to 0 for ', UserName);
+      // console.log('set socket to 0 for ', UserName);
     }).catch((err) => {
       console.log('error in setting socket to 0', err);
     });
