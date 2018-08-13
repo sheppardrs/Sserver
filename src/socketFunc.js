@@ -46,6 +46,14 @@ const socketManager = (socket, websocket) => {
     }).catch((err) => {
       console.log('Error in fetching conversation: ', err);
     });
+
+    // mark the conversation as read
+    Conversation.findById(currConversation._id).then((newconvo) => {
+      if (newconvo.unseen === UserName) {
+        newconvo.unseen = '';
+        newconvo.save().catch((err) => { return console.log('error in marking as seen', err); });
+      }
+    });
     // redundant
     // socket.join(currConversation._id);
   });
@@ -57,6 +65,7 @@ const socketManager = (socket, websocket) => {
     newconvo.participants.push(toUsername); // received (to)
     newconvo.participants.push(UserName); // current user (from)
     newconvo.title = `${toUsername} & ${UserName}`; // TODO make title post title or ref
+    newconvo.unseen = toUsername;
     // check that the toUsername exists
     User.findOne({ username: toUsername }).then((user) => {
       if (user !== null) {
@@ -88,6 +97,11 @@ const socketManager = (socket, websocket) => {
         Conversation.findById(saveRes.to._id).then((convo) => {
         //  console.log('found conversation: ', convo);
           websocket.to(convo._id).emit('message', saveRes);
+
+          // THIS ONLY WORKS FOR 2 person convos
+          convo.unseen = (convo.participants[0] === saveMess.from) ? convo.participants[1] : convo.participants[0];
+          console.log('convo.unseen is: ', convo.unseen);
+          convo.save().then((newconvo) => { return console.log('saved convo with unseen', newconvo); }).catch((err) => { console.log('error in saving convo.unseen change in message', err); });
         });
       })
       .catch((error) => {
