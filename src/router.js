@@ -39,6 +39,9 @@ router.route('/favorite')
   .post(requireAuth, UserController.addFavorite)
   .get(requireAuth, UserController.getFavorites);
 
+router.route('/notifications')
+  .get(requireAuth, Posts.getNotifications);
+
 function sendTestEmail() {
   // Sending an email:
   const transporter = createTransport({

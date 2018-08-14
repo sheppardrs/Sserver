@@ -1,5 +1,6 @@
 import Post from '../models/post_model';
 import User from '../models/user_model';
+import Conversation from '../models/conversation_model';
 
 // number of characters to select from content for listing preview
 const previewLen = 100;
@@ -142,8 +143,8 @@ export const updatePost = (req, res) => {
 
 
 export const likePost = (req, res) => {
-  console.log('######## adding a like####### ');
-  console.log(req.user);
+  // console.log('######## adding a like####### ');
+  // console.log(req.user);
   Post.findByIdAndUpdate(req.params.id, { $inc: { likes: 1 } }, { new: true }, (error, response) => {
     if (error) {
       res.status(530).json({ error });
@@ -151,4 +152,15 @@ export const likePost = (req, res) => {
       res.send(response);
     }
   });
+};
+
+// check if there are any unseen Messages
+export const getNotifications = (req, res) => {
+  // console.log('checking for new messages', req.user._id);
+  User.findById(req.user._id).then((user) => {
+    // console.log('searching for unseen for: ', user.username);
+    Conversation.find({ unseen: user.username }).then((convos) => {
+      res.send({ newMess: convos.length });
+    }).catch((err) => { return console.log('error in fetching unseen conversations', err); });
+  }).catch((err) => { console.log('error in fetching user for checking unseen convos', err); });
 };

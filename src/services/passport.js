@@ -50,10 +50,12 @@ const jwtLogin = new JwtStrategy(jwtOptions, (payload, done) => {
   User.findById(payload.sub, (err, user) => {
     if (err) {
       done(err, false);
-    } else if (user) {
-      done(null, user);
+    } else if (!user) {
+      done(null, false);
     } else if (!user.isVerified) {
       done(null, false);
+    } else if (user) {
+      done(null, user);
     } else {
       done(null, false);
     }
