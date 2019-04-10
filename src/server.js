@@ -63,6 +63,7 @@ app.get('/', (req, res) => {
 const port = process.env.PORT || 9090;
 // app.listen(port);
 
+// was off -- turned on for local, unclear if it has to be off for heroku
 // app.listen(port);
 
 server.listen(process.env.PORT || 3000);

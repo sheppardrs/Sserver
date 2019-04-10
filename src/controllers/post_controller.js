@@ -32,6 +32,7 @@ export const getPosts = (req, res) => {
   // console.log('#########', req.body.filter);
   // get the first 20 posts by id, title, tags, cover_url, likes, and content:
   // the content is cut to the first 200 characters
+  console.log('trying to get posts...');
   Post.aggregate([
     { $limit: numPosts },
     {

@@ -95,12 +95,13 @@ export const signup = (req, res, next) => {
           from: 'Sharity <sharitygive@gmail.com',
           to: user.email,
           subject: 'Confirm your Sharity Account',
-          text: 'Hi,\n\n Please open your account by clicking the link below to get started using Sharity:'`\nhttp://${req.headers.host}/api/confirmation/${token.token}\n\nWe hope you enjoy the website and make meaningful connections. Don't hesitate to reach out with any feedback!\n\nThe Sharity Team\n${homepage}`,
+          text: `Hi,\n\n Please open your account by clicking the link below to get started using Sharity:\nhttp://${req.headers.host}/api/confirmation/${token.token}\n\nWe hope you enjoy the website and make meaningful connections. Don't hesitate to reach out with any feedback!\n\nThe Sharity Team\n${homepage}`,
         };
 
         transporter.sendMail(mailOptions, (err, info) => {
           if (err) {
-            console.log('error sending mail\n');
+            console.log('error sending mail\n', err.message);
+            console.log(err);
             return res.status(500).send({ mess: err.message });
           } else {
             res.status(200).send(`A verification email has been sent to ${user.email}. Please verify your email within 10 hours.`);
